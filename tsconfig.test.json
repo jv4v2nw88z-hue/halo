@@ -1,0 +1,14 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ES2022",
+    "moduleResolution": "Bundler",
+    "types": ["node"],
+    "strict": true,
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "outDir": ".test-out",
+    "rootDir": "src"
+  },
+  "include": ["src/main/openrgb/**/*.ts", "src/shared/**/*.ts"]
+}

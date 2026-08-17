@@ -1,0 +1,101 @@
+{
+  "name": "halo",
+  "version": "0.1.0",
+  "description": "RGB lighting control with spatial effects, built on the OpenRGB SDK",
+  "main": "./out/main/index.js",
+  "type": "module",
+  "scripts": {
+    "dev": "electron-vite dev",
+    "build": "npm run typecheck && electron-vite build",
+    "start": "electron-vite preview",
+    "typecheck": "tsc --noEmit -p tsconfig.node.json && tsc --noEmit -p tsconfig.web.json",
+    "test:protocol": "tsc -p tsconfig.test.json && node .test-out/main/openrgb/protocol.test.js",
+    "package:win": "npm run build && electron-builder --win",
+    "package:mac": "npm run build && electron-builder --mac",
+    "package:linux": "npm run build && electron-builder --linux",
+    "test": "npm run test:protocol && npm run test:client",
+    "test:client": "tsc -p tsconfig.test.json && node .test-out/main/openrgb/client.test.js",
+    "mock": "tsc -p tsconfig.test.json && node .test-out/main/openrgb/mockserver.js",
+    "dev:mock": "npm run mock & electron-vite dev"
+  },
+  "devDependencies": {
+    "@types/node": "^22.20.1",
+    "@types/react": "^18.3.31",
+    "@types/react-dom": "^18.3.7",
+    "@vitejs/plugin-react": "^4.3.4",
+    "electron": "^33.2.0",
+    "electron-builder": "^25.1.8",
+    "electron-vite": "^2.3.0",
+    "typescript": "^5.9.3",
+    "vite": "^5.4.11"
+  },
+  "dependencies": {
+    "electron-updater": "^6.8.9",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "build": {
+    "appId": "dev.halo.lighting",
+    "productName": "Halo",
+    "files": [
+      "out/**/*",
+      "resources/**/*"
+    ],
+    "extraResources": [
+      {
+        "from": "resources/licenses",
+        "to": "licenses"
+      }
+    ],
+    "publish": [
+      {
+        "provider": "github",
+        "owner": "jv4v2nw88z-hue",
+        "repo": "halo"
+      }
+    ],
+    "artifactName": "${productName}-${version}-${arch}.${ext}",
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "icon": "build/icon.ico",
+      "requestedExecutionLevel": "requireAdministrator",
+      "publisherName": "Halo"
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": true,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "Halo",
+      "uninstallDisplayName": "Halo",
+      "installerIcon": "build/icon.ico",
+      "uninstallerIcon": "build/icon.ico"
+    },
+    "mac": {
+      "target": [
+        "dmg"
+      ],
+      "category": "public.app-category.utilities",
+      "icon": "build/icon.png"
+    },
+    "linux": {
+      "target": [
+        "AppImage",
+        "deb"
+      ],
+      "category": "Utility",
+      "icon": "build/icon.png"
+    }
+  },
+  "author": {
+    "name": "Halo"
+  }
+}
