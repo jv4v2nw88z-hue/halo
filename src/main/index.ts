@@ -172,6 +172,15 @@ function applyLayout(elements?: LayoutElement[]) {
 /* boot                                                                */
 /* ------------------------------------------------------------------ */
 
+/** Everything about the hardware that would invalidate a layout. */
+function hardwareSignature(): string {
+  return client.controllers
+    .map((c) => `${c.name}:${c.leds.length}:${c.zones.map((z) => z.ledsCount).join(',')}`)
+    .join('|');
+}
+
+let lastHardwareSig = '';
+
 async function boot() {
   store = new Store();
   server = new ServerManager();
@@ -188,10 +197,27 @@ async function boot() {
   client.on('controllers', () => {
     push('halo:devices', summarize());
     // A reconnect lands here too, not just first boot. Without this the app
-    // reattaches to OpenRGB and then sits there not driving anything.
-    applyLayout();
+    // reattaches to OpenRGB and then sits there not driving anything. Only
+    // rebuild when the hardware actually differs, so the 15s poll below does
+    // not rewrite the layout file forever.
+    const sig = hardwareSignature();
+    if (sig !== lastHardwareSig) {
+      lastHardwareSig = sig;
+      applyLayout();
+    }
     if (!engine.running) void engine.start();
   });
+
+  /**
+   * OpenRGB only pushes DEVICE_LIST_UPDATED for hotplug, not for a zone being
+   * resized by another client, and a zone resize changes LED counts without
+   * changing the controller count. Polling the full list is the only reliable
+   * way to notice, and at this interval it costs nothing.
+   */
+  setInterval(() => {
+    if (!client.connected) return;
+    void client.refreshControllers().catch(() => { /* retry loop owns recovery */ });
+  }, 15000);
 
   engine.on('status', (s) => push('halo:status', s));
   engine.on('preview', ({ t, rgb }) => {

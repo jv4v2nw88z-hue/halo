@@ -74,8 +74,9 @@ export class Engine extends EventEmitter {
   cfg: EffectConfig;
   overrides: OverrideMap = {};
 
-  /** Parallel to `field`: which device/zone/LED each field entry belongs to. */
-  private ledMeta: { d: number; z: number; l: number }[] = [];
+  /** Parallel to `field`: which device/zone/LED each field entry belongs to.
+   *  Names, not indices, so an override survives controllers being renumbered. */
+  private ledMeta: { d: string; z: string; l: number }[] = [];
   /** Parallel to `field`: resolved config, or undefined to use the base cfg. */
   private perLed: (EffectConfig | undefined)[] = [];
 
@@ -113,10 +114,10 @@ export class Engine extends EventEmitter {
 
     // Same iteration order as buildField, so index i in the field is index i
     // here. This is what lets an override name a single physical LED.
-    const meta: { d: number; z: number; l: number }[] = [];
+    const meta: { d: string; z: string; l: number }[] = [];
     for (const el of safe) {
       for (let j = 0; j < el.ledCount; j++) {
-        meta.push({ d: el.deviceIndex, z: el.zoneIndex, l: el.ledOffset + j });
+        meta.push({ d: el.device, z: el.zone, l: el.ledOffset + j });
       }
     }
     this.ledMeta = meta;
@@ -182,7 +183,7 @@ export class Engine extends EventEmitter {
       // One resolved object per (device, zone), plus one per individually
       // targeted LED, instead of one per LED.
       const hasLed = !!this.overrides[overrideKey.led(m.d, m.l)];
-      const sig = `${m.d}:${m.z}:${hasLed ? m.l : '-'}`;
+      const sig = JSON.stringify([m.d, m.z, hasLed ? m.l : -1]);
       let resolved = cache.get(sig);
       if (!resolved) {
         resolved = resolveConfig(this.cfg, this.overrides, m.d, m.z, m.l);

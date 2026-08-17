@@ -128,19 +128,19 @@ export default function LayoutView({ halo }: { halo: ReturnType<typeof useHalo> 
   const activeScope: Scope = scopeOptions.some((o) => o.id === scope) ? scope : 'all';
 
   const targetKey =
-    activeScope === 'device' && sel ? overrideKey.device(sel.deviceIndex)
-    : activeScope === 'zone' && sel ? overrideKey.zone(sel.deviceIndex, sel.zoneIndex)
-    : activeScope === 'led' && sel && selectedLed !== null ? overrideKey.led(sel.deviceIndex, selectedLed)
+    activeScope === 'device' && sel ? overrideKey.device(sel.device)
+    : activeScope === 'zone' && sel ? overrideKey.zone(sel.device, sel.zone)
+    : activeScope === 'led' && sel && selectedLed !== null ? overrideKey.led(sel.device, selectedLed)
     : null;
 
   /** The config the panel should display: everything inherited, then this level. */
   const shown: EffectConfig | null = !cfg ? null : (() => {
     if (!sel || activeScope === 'all') return cfg;
-    const d = overrides[overrideKey.device(sel.deviceIndex)];
-    const z = overrides[overrideKey.zone(sel.deviceIndex, sel.zoneIndex)];
+    const d = overrides[overrideKey.device(sel.device)];
+    const z = overrides[overrideKey.zone(sel.device, sel.zone)];
     if (activeScope === 'device') return { ...cfg, ...d };
     if (activeScope === 'zone') return { ...cfg, ...d, ...z };
-    return resolveConfig(cfg, overrides, sel.deviceIndex, sel.zoneIndex, selectedLed ?? -1);
+    return resolveConfig(cfg, overrides, sel.device, sel.zone, selectedLed ?? -1);
   })();
 
   /** Writes land on the global config or on the targeted override. */
@@ -247,7 +247,7 @@ export default function LayoutView({ halo }: { halo: ReturnType<typeof useHalo> 
                   )}
                   {pts.map((p, i) => {
                     const ledIndex = el.ledOffset + i;
-                    const isPinned = !!overrides[overrideKey.led(el.deviceIndex, ledIndex)];
+                    const isPinned = !!overrides[overrideKey.led(el.device, ledIndex)];
                     const isPicked = el.id === selected && selectedLed === ledIndex;
                     return (
                       <circle

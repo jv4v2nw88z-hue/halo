@@ -50,23 +50,30 @@ export interface EffectConfig {
  */
 export type OverrideMap = Record<string, Partial<EffectConfig>>;
 
+/**
+ * Keys are built from device and zone NAMES, never their OpenRGB indices.
+ * Indices renumber the moment a controller is added or removed — plug in a
+ * fourth DIMM and everything after it shifts — which would silently repoint an
+ * override at a different piece of hardware. Names survive that, which is the
+ * same reason the layout reconciles on name.
+ */
 export const overrideKey = {
-  device: (d: number) => `device:${d}`,
-  zone: (d: number, z: number) => `zone:${d}:${z}`,
-  led: (d: number, l: number) => `led:${d}:${l}`,
+  device: (device: string) => `device:${device}`,
+  zone: (device: string, zone: string) => `zone:${JSON.stringify([device, zone])}`,
+  led: (device: string, ledIndex: number) => `led:${JSON.stringify([device, ledIndex])}`,
 };
 
 /** Most specific first. Used by both the engine and the UI. */
 export function resolveConfig(
   base: EffectConfig,
   overrides: OverrideMap,
-  deviceIndex: number,
-  zoneIndex: number,
+  device: string,
+  zone: string,
   ledIndex: number,
 ): EffectConfig {
-  const d = overrides[overrideKey.device(deviceIndex)];
-  const z = overrides[overrideKey.zone(deviceIndex, zoneIndex)];
-  const l = overrides[overrideKey.led(deviceIndex, ledIndex)];
+  const d = overrides[overrideKey.device(device)];
+  const z = overrides[overrideKey.zone(device, zone)];
+  const l = overrides[overrideKey.led(device, ledIndex)];
   if (!d && !z && !l) return base;
   return { ...base, ...d, ...z, ...l };
 }
