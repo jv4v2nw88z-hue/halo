@@ -1,6 +1,6 @@
 {
   "name": "halo",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "RGB lighting control with spatial effects, built on the OpenRGB SDK",
   "main": "./out/main/index.js",
   "type": "module",
@@ -66,10 +66,7 @@
         }
       ],
       "icon": "build/icon.ico",
-      "requestedExecutionLevel": "requireAdministrator",
-      "signtoolOptions": {
-        "publisherName": "Halo"
-      }
+      "requestedExecutionLevel": "requireAdministrator"
     },
     "nsis": {
       "oneClick": false,
