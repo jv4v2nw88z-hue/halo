@@ -51,7 +51,8 @@
       {
         "provider": "github",
         "owner": "jv4v2nw88z-hue",
-        "repo": "halo"
+        "repo": "halo",
+        "releaseType": "release"
       }
     ],
     "artifactName": "${productName}-${version}-${arch}.${ext}",
@@ -66,7 +67,9 @@
       ],
       "icon": "build/icon.ico",
       "requestedExecutionLevel": "requireAdministrator",
-      "publisherName": "Halo"
+      "signtoolOptions": {
+        "publisherName": "Halo"
+      }
     },
     "nsis": {
       "oneClick": false,
