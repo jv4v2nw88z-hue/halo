@@ -1,5 +1,6 @@
 import { app, BrowserWindow, ipcMain, Tray, Menu, nativeImage, shell, dialog } from 'electron';
 import path from 'node:path';
+import fs from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { OpenRgbClient } from './openrgb/client.js';
 import { Engine } from './engine.js';
@@ -25,6 +26,23 @@ const { autoUpdater } = electronUpdater;
  */
 function initUpdates() {
   if (!app.isPackaged) return;
+
+  // Update failures are otherwise completely silent: electron-updater swallows
+  // them into an event and deletes the partial download, so "checked, found
+  // nothing" and "downloaded then rejected it" look identical from outside.
+  // Cheap file log, no extra dependency.
+  const logFile = path.join(app.getPath('userData'), 'updater.log');
+  const write = (level: string, ...args: unknown[]) => {
+    const line = `${new Date().toISOString()} [${level}] ${args.map(String).join(' ')}
+`;
+    try { fs.appendFileSync(logFile, line); } catch { /* logging must never break updating */ }
+  };
+  autoUpdater.logger = {
+    info: (...a: unknown[]) => write('info', ...a),
+    warn: (...a: unknown[]) => write('warn', ...a),
+    error: (...a: unknown[]) => write('error', ...a),
+    debug: (...a: unknown[]) => write('debug', ...a),
+  };
 
   autoUpdater.autoDownload = true;
   autoUpdater.autoInstallOnAppQuit = true;
