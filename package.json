@@ -1,6 +1,6 @@
 {
   "name": "halo",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "description": "RGB lighting control with spatial effects, built on the OpenRGB SDK",
   "main": "./out/main/index.js",
   "type": "module",

@@ -200,6 +200,9 @@ export class Engine extends EventEmitter {
     if (this.running) return;
     this.unsupported = await this.client.enableDirectModeAll();
     this.running = true;
+    // Fresh run, fresh counters: a skip count carried over from before a pause
+    // describes a loop that is no longer the one you are looking at.
+    this.dropped = 0;
     this.startedAt = performance.now();
     this.fpsWindow = this.startedAt;
     this.frames = 0;
@@ -209,6 +212,9 @@ export class Engine extends EventEmitter {
 
   stop() {
     this.running = false;
+    // Otherwise the status line keeps advertising the last frame rate of a loop
+    // that is no longer running, which reads as "paused, but still at 64fps".
+    this.fps = 0;
     if (this.timer) { clearTimeout(this.timer); this.timer = null; }
     this.emit('status', this.status());
   }
@@ -281,6 +287,7 @@ export class Engine extends EventEmitter {
   status(): EngineStatus {
     return {
       state: this.client.state,
+      running: this.running,
       protocol: this.client.protocol,
       fps: this.fps,
       deviceCount: this.slices.length,

@@ -25,13 +25,15 @@ const STATE_COPY: Record<string, string> = {
 export default function App() {
   const halo = useHalo();
   const [tab, setTab] = useState<'devices' | 'layout'>('layout');
-  const [running, setRunning] = useState(true);
 
   if (!halo.ready) {
     return <div className="app-boot">Looking for lighting hardware</div>;
   }
 
   const s = halo.status;
+  // Read from the engine rather than tracking it here: a renderer reload used
+  // to reset this to "running" while the lighting was actually paused.
+  const running = s?.running ?? true;
 
   return (
     <div className="app">
@@ -77,7 +79,7 @@ export default function App() {
         <button
           className="app-power"
           aria-pressed={!running}
-          onClick={async () => setRunning(await halo.setRunning(!running))}
+          onClick={() => void halo.setRunning(!running)}
         >
           {running ? 'Pause lighting' : 'Resume lighting'}
         </button>

@@ -67,6 +67,7 @@ export function useHalo() {
       window.halo.onStatus((status) => setState((p) => ({ ...p, status }))),
       window.halo.onNotice((notice) => setState((p) => ({ ...p, notice }))),
       window.halo.onOverrides((overrides) => setState((p) => ({ ...p, overrides }))),
+      window.halo.onConfig((cfg) => setState((p) => ({ ...p, cfg }))),
       window.halo.onPreview((f) => { frameRef.current = f.rgb; }),
     ];
 
@@ -80,14 +81,17 @@ export function useHalo() {
    * process catches up, rather than every pointermove waiting on an IPC round
    * trip.
    */
+  const fail = (what: string) => (e: unknown) =>
+    setState((p) => ({ ...p, notice: `${what} failed: ${e instanceof Error ? e.message : String(e)}` }));
+
   const setLayout = useCallback((layout: LayoutElement[]) => {
     setState((p) => ({ ...p, layout }));
-    void window.halo.setLayout(layout);
+    window.halo.setLayout(layout).catch(fail('Saving the layout'));
   }, []);
 
   const setConfig = useCallback((patch: Partial<EffectConfig>) => {
     setState((p) => (p.cfg ? { ...p, cfg: { ...p.cfg, ...patch } } : p));
-    void window.halo.setConfig(patch);
+    window.halo.setConfig(patch).catch(fail('Changing the effect'));
   }, []);
 
   const autoArrange = useCallback(async () => {

@@ -120,6 +120,7 @@ function createTray() {
       {
         label: engine.running ? 'Pause lighting' : 'Resume lighting',
         click: async () => {
+          userPaused = engine.running;
           if (engine.running) { engine.stop(); engine.blackout(); }
           else await engine.start();
           rebuild();
@@ -199,6 +200,15 @@ function hardwareSignature(): string {
 
 let lastHardwareSig = '';
 
+/**
+ * Whether the user asked for lighting to be off.
+ *
+ * Distinct from engine.running: the controller poll re-enumerates every 15s and
+ * would otherwise see a stopped engine and helpfully restart it, which turned
+ * "Pause lighting" into "pause lighting for at most fifteen seconds".
+ */
+let userPaused = false;
+
 async function boot() {
   store = new Store();
   server = new ServerManager();
@@ -223,7 +233,7 @@ async function boot() {
       lastHardwareSig = sig;
       applyLayout();
     }
-    if (!engine.running) void engine.start();
+    if (!engine.running && !userPaused) void engine.start();
   });
 
   /**
@@ -290,6 +300,7 @@ ipcMain.handle('halo:setLayout', (_e, layout: LayoutElement[]) => {
 ipcMain.handle('halo:setConfig', (_e, cfg: Partial<EffectConfig>) => {
   engine.setConfig(cfg);
   store.setCfg(engine.cfg);
+  push('halo:config', engine.cfg);
   return engine.cfg;
 });
 
@@ -300,6 +311,7 @@ ipcMain.handle('halo:autoLayout', () => {
 });
 
 ipcMain.handle('halo:setRunning', async (_e, run: boolean) => {
+  userPaused = !run;
   if (run) await engine.start();
   else { engine.stop(); engine.blackout(); }
   return engine.running;
@@ -321,6 +333,7 @@ ipcMain.handle('halo:loadProfile', (_e, name: string) => {
   if (!p) return null;
   engine.setConfig(p.cfg);
   store.setCfg(engine.cfg);
+  push('halo:config', engine.cfg);
   return engine.cfg;
 });
 

@@ -95,6 +95,9 @@ export interface DeviceSummary {
 
 export interface EngineStatus {
   state: ConnectionState;
+  /** Whether the frame loop is actually running. The UI must not track this
+   *  itself: a renderer reload would reset its guess while lighting kept going. */
+  running: boolean;
   protocol: number;
   fps: number;
   deviceCount: number;

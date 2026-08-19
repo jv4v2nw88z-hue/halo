@@ -52,6 +52,7 @@ export interface HaloApi {
   onPreview(cb: (f: { t: number; rgb: Uint8Array }) => void): () => void;
   onNotice(cb: (msg: string) => void): () => void;
   onOverrides(cb: (o: OverrideMap) => void): () => void;
+  onConfig(cb: (c: EffectConfig) => void): () => void;
 }
 
 function subscribe(channel: string, cb: (payload: any) => void) {
@@ -87,6 +88,7 @@ const api: HaloApi = {
   onPreview: (cb) => subscribe('halo:preview', (f) => cb({ t: f.t, rgb: new Uint8Array(f.rgb) })),
   onNotice: (cb) => subscribe('halo:notice', cb),
   onOverrides: (cb) => subscribe('halo:overrides', cb),
+  onConfig: (cb) => subscribe('halo:config', cb),
 };
 
 contextBridge.exposeInMainWorld('halo', api);
